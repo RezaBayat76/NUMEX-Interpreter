@@ -210,11 +210,14 @@
         
 ;; Problem 3
 
-(define (ifmunit e1 e2 e3) "CHANGE")
+(define (ifmunit e1 e2 e3)
+  (cnd (ismunit  e1) e2 e3))
 
-(define (with* bs e2) "CHANGE")
+(define (with* bs e2)
+  (if (equal? bs null) e2 (with (car (car bs)) (cdr (car bs)) (with* (cdr bs) e2))))
 
-(define (ifneq e1 e2 e3 e4) "CHANGE")
+(define (ifneq e1 e2 e3 e4)
+  (with "_x" e1 (with "_y" e2 (ifleq (var "_x") (var "_y") e4 (ifleq (var "_y") (var "_x") e4 e3)))))
 
 ;; Problem 4
 
