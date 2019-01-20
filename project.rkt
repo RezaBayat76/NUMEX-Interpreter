@@ -160,6 +160,27 @@
                    (eval-under-env (ifleq-e3 e) env)
                    (eval-under-env (ifleq-e4 e) env))
                (error "NUMEX ifleq applied to non-number")))]
+        ;; TODO: lam, apply, with
+        [(apair? e)
+         (let ([v1 (eval-under-env (apair-e1 e) env)]
+               [v2 (eval-under-env (apair-e2 e) env)])
+                (apair v1 v2))]
+        [(1st? e)
+         (let ([v (eval-under-env (1st-e e) env)])
+           (if (apair? v)
+               (apair-e1 v)
+               (error "NUMEX 1st applied to non-apair" e)))]
+        [(2nd? e)
+         (let ([v (eval-under-env (2nd-e e) env)])
+           (if (apair? v)
+               (apair-e2 v)
+               (error "NUMEX 2nd applied to non-apair")))]
+        [(munit? e) e]
+        [(ismunit? e)
+         (let ([v (eval-under-env (ismunit-e e) env)])
+           (if (munit? v)
+               (bool #t)
+               (bool #f)))]
         
         ;; CHANGE add more cases here
         [#t (error (format "bad NUMEX expression: ~v" e))]))
