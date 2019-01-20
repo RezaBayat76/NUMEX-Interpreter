@@ -160,7 +160,26 @@
                    (eval-under-env (ifleq-e3 e) env)
                    (eval-under-env (ifleq-e4 e) env))
                (error "NUMEX ifleq applied to non-number")))]
-        ;; TODO: lam, apply, with
+         [(lam? e)
+         (if (and (or (string? (lam-nameopt e))
+                      (null? (lam-nameopt e)))
+                  (string? (lam-formal e)))
+             (closure env e)
+             (error "NUMEX lam name and parameter name must be string"))]
+        [(apply? e)
+         (let ([v (eval-under-env (apply-actual e) env)]
+               [clsr (eval-under-env (apply-funexp e) env)])
+           (if (closure? clsr)
+               (let ([clsrFun (closure-f clsr)])
+                 (if (null? (lam-nameopt clsrFun))
+                     (eval-under-env (lam-body clsrFun) (cons (cons (lam-formal clsrFun) v) (closure-env clsr)))
+                     (eval-under-env (lam-body clsrFun) (cons (cons (lam-nameopt clsrFun) clsr) (cons (cons (lam-formal clsrFun) v) (closure-env clsr))))))
+               (error "NUMEX apply applied to non-lam" e)))]
+        [(with? e)
+         (let ([v1 (eval-under-env (with-e1 e) env)])
+           (if (string? (with-s e))
+               (eval-under-env (with-e2 e) (cons (cons (with-s e) v1) env))
+               (error "NUMEX with applied to non-number or the name of the variable is not a string")))]
         [(apair? e)
          (let ([v1 (eval-under-env (apair-e1 e) env)]
                [v2 (eval-under-env (apair-e2 e) env)])
@@ -181,7 +200,8 @@
            (if (munit? v)
                (bool #t)
                (bool #f)))]
-        
+        [(closure? e) e]
+    
         ;; CHANGE add more cases here
         [#t (error (format "bad NUMEX expression: ~v" e))]))
 
