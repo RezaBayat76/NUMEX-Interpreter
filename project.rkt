@@ -15,10 +15,11 @@
 (struct mult (e1 e2) #:transparent) ;; multipy two expressions
 (struct div (e1 e2) #:transparent) ;; divide two expressions
 (struct neg (e) #:transparent) ;; negative a expression
-(struct bool (bool) #:transparent) ;; a boolean constants, e,g., (bool #t)
 
+(struct bool (e) #:transparent) ;; a boolean constants, e,g., (bool #t)
 (struct andalso (e1 e2) #:transparent) ;; andalso two expressions
 (struct orelse (e1 e2) #:transparent) ;; or divide two expressions
+
 (struct cnd (e1 e2 e3) #:transparent) ;; condition
 (struct iseq (e1 e2) #:transparent) ;; comparison two expressions
 (struct ifnzero (e1 e2 e3) #:transparent) ;; condition
@@ -59,10 +60,11 @@
 ;; lookup a variable in an environment
 ;; Complete this function
 (define (envlookup env str)
-  (cond [(null? env) (error "unbound variable during evaluation" str)]
-  	;;	"CHANGE" 
-		)
- )
+  (cond [(null? env) (error "unbound variable during evaluation" str)])
+  (cond [(equal? str (car (car env))) (cdr (car env))]
+        [else (envlookup (cdr env) str)]
+  )
+)
 
 ;; Complete more cases for other kinds of NUMEX expressions.
 ;; We will test eval-under-env by calling it directly even though
@@ -70,6 +72,9 @@
 (define (eval-under-env e env)
   (cond [(var? e) 
          (envlookup env (var-string e))]
+        [(num? e)
+         (cond [(integer? (num-int e)) e]
+               [else (error "NUMEX num applied to non racket integer")])]
         [(plus? e) 
          (let ([v1 (eval-under-env (plus-e1 e) env)]
                [v2 (eval-under-env (plus-e2 e) env)])
@@ -78,6 +83,55 @@
                (num (+ (num-int v1) 
                        (num-int v2)))
                (error "NUMEX addition applied to non-number")))]
+        [(minus? e)
+         (let ([v1 (eval-under-env (minus-e1 e) env)]
+               [v2 (eval-under-env (minus-e2 e) env)])
+           (if (and (num? v1)
+                    (num? v2))
+               (num (- (num-int v1)
+                       (num-int v2)))
+               (error "NUMEX minus applied to non-numbers")))]
+        [(mult? e)
+         (let ([v1 (eval-under-env (mult-e1 e) env)]
+               [v2 (eval-under-env (mult-e2 e) env)])
+           (if (and (num? v1)
+                    (num? v2))
+               (num (* (num-int v1)
+                       (num-int v2)))
+               (error "NUMEX multiply applied to non-numbers")))]
+        [(div? e)
+         (let ([v1 (eval-under-env (div-e1 e) env)]
+               [v2 (eval-under-env (div-e2 e) env)])
+           (if (and (num? v1)
+                    (num? v2))
+               (num (/ (num-int v1)
+                       (num-int v2)))
+               (error "NUMEX divide applied to non-numbers")))]
+        [(neg? e)
+         (let ([v (eval-under-env (neg-e e) env)])
+           (if (num? v)
+               (num (- 0 (num-int v)))
+               (error "NUMEX negation applied to non-number")))]
+        [(bool? e)
+         (cond [(boolean? (bool-e e)) e]
+               [else (error "NUMEX bool applied to non racket boolean")])]
+        [(andalso? e)
+         (let ([v1 (eval-under-env (andalso-e1 e) env)]
+               [v2 (eval-under-env (andalso-e2 e) env)])
+           (if (and (bool? v1)
+                    (bool? v2))
+               (bool (and (bool-e v1)
+                              (bool-e v2)))
+               (error "NUMEX andalso applied to non-booleans")))]
+        [(orelse? e)
+         (let ([v1 (eval-under-env (orelse-e1 e) env)]
+               [v2 (eval-under-env (orelse-e2 e) env)])
+           (if (and (bool? v1)
+                    (bool? v2))
+               (bool (or (bool-e v1)
+                         (bool-e v2)))
+               (error "NUMEX orelse applied to non-booleans")))]
+        
         ;; CHANGE add more cases here
         [#t (error (format "bad NUMEX expression: ~v" e))]))
 
