@@ -201,8 +201,6 @@
                (bool #t)
                (bool #f)))]
         [(closure? e) e]
-    
-        ;; CHANGE add more cases here
         [#t (error (format "bad NUMEX expression: ~v" e))]))
 
 ;; Do NOT change
