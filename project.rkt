@@ -11,17 +11,33 @@
 (struct var  (string) #:transparent)  ;; a variable, e.g., (var "foo")
 (struct num  (int)    #:transparent)  ;; a constant number, e.g., (num 17)
 (struct plus  (e1 e2)  #:transparent)  ;; add two expressions
+(struct minus (e1 e2) #:transparent) ;; minus two expressions
+(struct mult (e1 e2) #:transparent) ;; multipy two expressions
+(struct div (e1 e2) #:transparent) ;; divide two expressions
+(struct neg (e) #:transparent) ;; negative a expression
+(struct bool (bool) #:transparent) ;; a boolean constants, e,g., (bool #t)
 
+(struct andalso (e1 e2) #:transparent) ;; andalso two expressions
+(struct orelse (e1 e2) #:transparent) ;; or divide two expressions
+(struct cnd (e1 e2 e3) #:transparent) ;; condition
+(struct iseq (e1 e2) #:transparent) ;; comparison two expressions
+(struct ifnzero (e1 e2 e3) #:transparent) ;; condition
+(struct ifleq (e1 e2 e3 e4) #:transparent)
 
 (struct lam  (nameopt formal body) #:transparent) ;; a recursive(?) 1-argument function
 (struct apply (funexp actual)       #:transparent) ;; function application
 
+(struct with (s e1 e2) #:transparent)
+
+(struct apair (e1 e2) #:transparent)
+(struct 1st (e) #:transparent)
+(struct 2nd (e) #:transparent)
 
 (struct munit   ()      #:transparent) ;; unit value -- good for ending a list
 (struct ismunit (e)     #:transparent) ;; if e1 is unit then true else false
 
 ;; a closure is not in "source" programs; it is what functions evaluate to
-(struct closure (env f) #:transparent) 
+(struct closure (env f) #:transparent)
 
 ;; Problem 1
 
