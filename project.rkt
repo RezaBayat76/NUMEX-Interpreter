@@ -41,8 +41,18 @@
 
 ;; Problem 1
 
-(define (racketlist->numexlist xs) "CHANGE")
-(define (numexlist->racketlist xs) "CHANGE")
+(define (racketlist->numexlist xs)
+  (cond [(null? xs) (munit)]
+        [(list? xs) (apair (car xs) (racketlist->numexlist (cdr xs)))]
+        [#t (error ("it's not a racket list"))]
+  )
+)
+(define (numexlist->racketlist xs)
+  (cond [(munit? xs) null]
+        [(apair? xs) (cons (apair-e1 xs) (numexlist->racketlist (apair-e2 xs)))]
+        [#t (error ("it's not a numex list"))]
+  )
+)
 
 ;; Problem 2
 
@@ -50,7 +60,7 @@
 ;; Complete this function
 (define (envlookup env str)
   (cond [(null? env) (error "unbound variable during evaluation" str)]
-  		"CHANGE" 
+  	;;	"CHANGE" 
 		)
  )
 
