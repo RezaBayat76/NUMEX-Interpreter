@@ -23,7 +23,7 @@
 (struct cnd (e1 e2 e3) #:transparent) ;; condition
 (struct iseq (e1 e2) #:transparent) ;; comparison two expressions
 (struct ifnzero (e1 e2 e3) #:transparent) ;; condition
-(struct ifleq (e1 e2 e3 e4) #:transparent)
+(struct ifleq (e1 e2 e3 e4) #:transparent) ;; condition
 
 (struct lam  (nameopt formal body) #:transparent) ;; a recursive(?) 1-argument function
 (struct apply (funexp actual)       #:transparent) ;; function application
@@ -131,6 +131,35 @@
                (bool (or (bool-e v1)
                          (bool-e v2)))
                (error "NUMEX orelse applied to non-booleans")))]
+        [(cnd? e)
+         (let ([v1 (eval-under-env (cnd-e1 e) env)])
+           (if (bool? v1)
+               (if (equal? (bool-e v1) #t)
+                              (eval-under-env (cnd-e2 e) env)
+                              (eval-under-env (cnd-e3 e) env))
+               (error "NUMEX cnd applied to non-boolean")))]
+        [(iseq? e)
+         (let ([v1 (eval-under-env (iseq-e1 e) env)]
+               [v2 (eval-under-env (iseq-e2 e) env)])
+               (if (equal? v1 v2)
+                   (bool #t)
+                   (bool #f)))]
+        [(ifnzero? e)
+         (let ([v1 (eval-under-env (ifnzero-e1 e) env)])
+           (if (num? v1)
+               (if (equal? (num-int v1) 0)
+                   (eval-under-env (ifnzero-e3 e) env)
+                   (eval-under-env (ifnzero-e2 e) env))
+               (error "NUMEX isnzero applied to non-number")))]
+        [(ifleq? e)
+         (let ([v1 (eval-under-env (ifleq-e1 e) env)]
+               [v2 (eval-under-env (ifleq-e2 e) env)])
+           (if (and (num? v1)
+                    (num? v2))
+               (if (<= (num-int v1) (num-int v2))
+                   (eval-under-env (ifleq-e3 e) env)
+                   (eval-under-env (ifleq-e4 e) env))
+               (error "NUMEX ifleq applied to non-number")))]
         
         ;; CHANGE add more cases here
         [#t (error (format "bad NUMEX expression: ~v" e))]))
