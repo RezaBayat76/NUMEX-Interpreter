@@ -123,16 +123,14 @@
                [v2 (eval-under-env (andalso-e2 e) env)])
            (if (and (bool? v1)
                     (bool? v2))
-               (bool (and (bool-e v1)
-                              (bool-e v2)))
+               (if (equal? (bool-e v1) #f) (bool #f) (if (equal? (bool-e v2) #f) (bool #f) (bool #t)))
                (error "NUMEX andalso applied to non-booleans")))]
         [(orelse? e)
          (let ([v1 (eval-under-env (orelse-e1 e) env)]
                [v2 (eval-under-env (orelse-e2 e) env)])
            (if (and (bool? v1)
                     (bool? v2))
-               (bool (or (bool-e v1)
-                         (bool-e v2)))
+               (if (equal? (bool-e v1) #t) (bool #t) (if (equal? (bool-e v2) #t) (bool #t) (bool #f)))
                (error "NUMEX orelse applied to non-booleans")))]
         [(cnd? e)
          (let ([v1 (eval-under-env (cnd-e1 e) env)])
