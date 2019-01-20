@@ -109,9 +109,12 @@
                (error "NUMEX divide applied to non-numbers")))]
         [(neg? e)
          (let ([v (eval-under-env (neg-e e) env)])
-           (if (num? v)
-               (num (- 0 (num-int v)))
-               (error "NUMEX negation applied to non-number")))]
+           (if (or (num? v)
+                   (bool? v))
+               (if (num? v)
+                   (num (- 0 (num-int v)))
+                   (if (equal? (bool-e v) #t) (bool #f) (bool #t)))
+               (error "NUMEX negation applied to non-number or non-boolean")))]
         [(bool? e)
          (cond [(boolean? (bool-e e)) e]
                [else (error "NUMEX bool applied to non racket boolean")])]
