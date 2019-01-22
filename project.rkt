@@ -119,18 +119,22 @@
          (cond [(boolean? (bool-e e)) e]
                [else (error "NUMEX bool applied to non racket boolean")])]
         [(andalso? e)
-         (let ([v1 (eval-under-env (andalso-e1 e) env)]
-               [v2 (eval-under-env (andalso-e2 e) env)])
-           (if (and (bool? v1)
-                    (bool? v2))
-               (if (equal? (bool-e v1) #f) (bool #f) (if (equal? (bool-e v2) #f) (bool #f) (bool #t)))
-               (error "NUMEX andalso applied to non-booleans")))]
-        [(orelse? e)
-         (let ([v1 (eval-under-env (orelse-e1 e) env)]
-               [v2 (eval-under-env (orelse-e2 e) env)])
-           (if (and (bool? v1)
-                    (bool? v2))
-               (if (equal? (bool-e v1) #t) (bool #t) (if (equal? (bool-e v2) #t) (bool #t) (bool #f)))
+         (let ([v1 (eval-under-env (andalso-e1 e) env)])
+           (if (bool? v1)
+               (if (equal? (bool-e v1) #f) (bool #f) 
+                   (let ([v2 (eval-under-env (andalso-e1 e) env)])
+                     (if (bool? v2)
+                         (if (equal? (bool-e v2) #f) (bool #f) (bool #t))
+                         (error "NUMEX orelse applied to non-booleans"))))
+               (error "NUMEX orelse applied to non-booleans")))]
+         [(orelse? e)
+         (let ([v1 (eval-under-env (orelse-e1 e) env)])
+           (if (bool? v1)
+               (if (equal? (bool-e v1) #t) (bool #t) 
+                   (let ([v2 (eval-under-env (orelse-e2 e) env)])
+                     (if (bool? v2)
+                         (if (equal? (bool-e v2) #t) (bool #t) (bool #f))
+                         (error "NUMEX orelse applied to non-booleans"))))
                (error "NUMEX orelse applied to non-booleans")))]
         [(cnd? e)
          (let ([v1 (eval-under-env (cnd-e1 e) env)])
@@ -161,7 +165,7 @@
                    (eval-under-env (ifleq-e3 e) env)
                    (eval-under-env (ifleq-e4 e) env))
                (error "NUMEX ifleq applied to non-number")))]
-         [(lam? e)
+        [(lam? e)
          (if (and (or (string? (lam-nameopt e))
                       (null? (lam-nameopt e)))
                   (string? (lam-formal e)))
