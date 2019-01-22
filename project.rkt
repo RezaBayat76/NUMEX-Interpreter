@@ -218,18 +218,32 @@
   (cnd (ismunit  e1) e2 e3))
 
 (define (with* bs e2)
-  (if (equal? bs null) e2 (with (car (car bs)) (cdr (car bs)) (with* (cdr bs) e2))))
+  (cnd (equal? bs null) e2
+      (with (car (car bs)) (cdr (car bs)) (with* (cdr bs) e2))))
 
 (define (ifneq e1 e2 e3 e4)
-  (with "_x" e1 (with "_y" e2 (ifleq (var "_x") (var "_y") e4 (ifleq (var "_y") (var "_x") e4 e3)))))
+  (with "_x" e1
+        (with "_y" e2
+              (ifleq (var "_x") (var "_y") e4
+                     (ifleq (var "_y") (var "_x") e4 e3)))))
 
 ;; Problem 4
 
-(define numex-filter "CHANGE")
+(define numex-filter
+  (lam null "_filter_lam"
+       (lam "_self" "_nList"
+            (cnd (ismunit (var "_nList")) (munit)
+                     (apair (apply (var "_filter_lam") (1st (var "_nList")))
+                            (apply (var "_self") (2nd (var "_nList"))))))))
+
 
 (define numex-all-gt
   (with "filter" numex-filter
-        "CHANGE (notice filter is now in NUMEX scope)"))
+        (lam null "i"
+             (apply (var "filter")
+                    (lam null "xL"
+                         (ifleq (var "xL") (var "i") (2nd (var "xL"))
+                                (cons (var "xL") (apply (var "filter") (2nd (var "xL"))))))))))
 
 ;; Challenge Problem
 
