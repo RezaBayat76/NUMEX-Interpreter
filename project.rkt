@@ -104,7 +104,7 @@
                [v2 (eval-under-env (div-e2 e) env)])
            (if (and (num? v1)
                     (num? v2))
-               (num (/ (num-int v1)
+               (num (quotient (num-int v1)
                        (num-int v2)))
                (error "NUMEX divide applied to non-numbers")))]
         [(neg? e)
@@ -122,7 +122,7 @@
          (let ([v1 (eval-under-env (andalso-e1 e) env)])
            (if (bool? v1)
                (if (equal? (bool-e v1) #f) (bool #f) 
-                   (let ([v2 (eval-under-env (andalso-e1 e) env)])
+                   (let ([v2 (eval-under-env (andalso-e2 e) env)])
                      (if (bool? v2)
                          (if (equal? (bool-e v2) #f) (bool #f) (bool #t))
                          (error "NUMEX orelse applied to non-booleans"))))
@@ -218,11 +218,11 @@
   (cnd (ismunit  e1) e2 e3))
 
 (define (with* bs e2)
-  (cnd (equal? bs null) e2
+  (if (equal? bs null) e2
       (with (car (car bs)) (cdr (car bs)) (with* (cdr bs) e2))))
 
 (define (ifneq e1 e2 e3 e4)
-  (cnd (iseq (var "_x") (var "_y")) e3 e4))
+  (cnd (iseq e1 e2) e4 e3))
 
 ;; Problem 4
 
@@ -230,17 +230,18 @@
   (lam null "_filter_lam"
        (lam "_self" "_nList"
             (cnd (ismunit (var "_nList")) (munit)
-                     (apair (apply (var "_filter_lam") (1st (var "_nList")))
-                            (apply (var "_self") (2nd (var "_nList"))))))))
-
+                     (cnd (iseq (num 0) (apply (var "_filter_lam") (1st (var "_nList"))))
+                          (apply (var "_self") (2nd (var "_nList")))
+                          (apair (apply (var "_filter_lam") (1st (var "_nList")))
+                            (apply (var "_self") (2nd (var "_nList")))))))))
 
 (define numex-all-gt
-  (with "filter" numex-filter
-        (lam null "i"
-             (apply (var "filter")
-                    (lam null "xL"
-                         (ifleq (var "xL") (var "i") (2nd (var "xL"))
-                                (cons (var "xL") (apply (var "filter") (2nd (var "xL"))))))))))
+  (lam null "i"
+       (lam "filter" "xL"
+            (apply
+             (apply numex-filter
+                    (lam null "x"
+                         (ifleq (var "x") (var "i") (num 0)(var "x"))))( var "xL")))))
 
 ;; Challenge Problem
 
